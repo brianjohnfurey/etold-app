@@ -1,5 +1,5 @@
 /* E-TOLD PWA service worker */
-const CACHE_NAME = 'etold-cache-v1';
+const CACHE_NAME = 'etold-cache-v2';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,8 @@ const CORE_ASSETS = [
   './assets/lion_3bd99eef8ac1.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/apple-touch-icon.png',
+  './icons/icon-1024.png',
 ];
 
 // Install: cache core
