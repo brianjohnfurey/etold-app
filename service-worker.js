@@ -1,5 +1,5 @@
 /* E-TOLD PWA service worker */
-const CACHE_NAME = 'etold-cache-v2';
+const CACHE_NAME = 'etold-cache-v2-v6b';
 const CORE_ASSETS = [
   './',
   './index.html',
