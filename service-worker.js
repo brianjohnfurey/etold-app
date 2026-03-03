@@ -1,5 +1,5 @@
 /* E-TOLD PWA service worker */
-const CACHE_NAME = 'etold-cache-v8-snapshotprint';
+const CACHE_NAME = 'etold-cache-v9-fitpage';
 const CORE_ASSETS = [
   './',
   './index.html',
