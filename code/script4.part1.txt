@@ -1,0 +1,82 @@
+
+// === fixed82: exact stopping-factor ground-roll hooks ===
+function calcTakeoffGroundRollF0Excel(pa, tempC, wt, wind){
+  const T = EXCEL_TOD_F0;
+  function nearestIndexFirst(arr, x){
+    let bi=0, bd=null;
+    for(let i=0;i<arr.length;i++){
+      const a=arr[i];
+      if(a===null||a===undefined||!isFinite(a)) continue;
+      const d=Math.abs(x-a);
+      if(bd===null||d<bd-1e-12){ bd=d; bi=i; }
+    }
+    return bi;
+  }
+  function interp1Any(xArr, yArr, x){
+    if(!xArr || !yArr || xArr.length<2 || yArr.length!==xArr.length) return NaN;
+    const inc = xArr[0] < xArr[xArr.length-1];
+    if(!inc){
+      const xr = [...xArr].reverse();
+      const yr = [...yArr].reverse();
+      return interp1Any(xr, yr, x);
+    }
+    if(x < xArr[0] || x > xArr[xArr.length-1]) return NaN;
+    for(let i=0;i<xArr.length-1;i++){
+      const x0=xArr[i], x1=xArr[i+1];
+      if(x0<=x && x<=x1){
+        const y0=yArr[i], y1=yArr[i+1];
+        if(!isFinite(y0)||!isFinite(y1)) return NaN;
+        if(x1===x0) return y0;
+        return y0 + (y1-y0)*(x-x0)/(x1-x0);
+      }
+    }
+    return NaN;
+  }
+  const iPA = nearestIndexFirst(T.s1_pa_headers, pa);
+  const col1 = T.s1_table.map(r => r[iPA]);
+  const q11 = interp1Any(T.s1_temp_axis, col1, tempC);
+  if(!isFinite(q11)) return "Out of Range";
+
+  const i2 = nearestIndexFirst(T.s2_curve_axis, q11);
+  const col2 = T.s2_table.map(r => r[i2]);
+  const q12 = interp1Any(T.s2_wt_axis, col2, wt);
+  if(!isFinite(q12)) return "Out of Range";
+
+  const i3 = nearestIndexFirst(T.s3_curve_axis, q12);
+  const col3 = T.s3_table.map(r => r[i3]);
+  const q13 = interp1Any(T.s3_hw_axis, col3, wind);
+  if(!isFinite(q13)) return "Out of Range";
+  return Math.round(q13);
+}
+
+window.calcMultistageNearestStage3 = function(chartKey, pressAlt, temp, weight, headwind) {
+    const ch = ETOLD_DATA[chartKey];
+    if (!ch || ch.type !== 'ms') return null;
+
+    const t1i = nearestIndex(ch.s1.t, temp);
+    const a1i = nearestIndex(ch.s1.a, pressAlt);
+    if (t1i < 0 || a1i < 0) return null;
+    const s1row = ch.s1.d[t1i];
+    if (!s1row || s1row[a1i] == null) return null;
+    let v = s1row[a1i];
+
+    if (ch.s2 && ch.s2.r && ch.s2.r.length > 0) {
+        const wi = nearestIndex(ch.s2.w, weight);
+        const ri = nearestIndex(ch.s2.r, v);
+        if (wi < 0 || ri < 0) return null;
+        const s2row = ch.s2.d[wi];
+        if (!s2row || s2row[ri] == null) return null;
+        v = s2row[ri];
+    }
+
+    if (ch.s3w) {
+        const hwObj = (headwind >= 0) ? ch.s3w.hw : ch.s3w.tw;
+        const hi = nearestIndex(hwObj.w, headwind);
+        const ri = nearestIndex(ch.s3w.r, v);
+        if (hi < 0 || ri < 0) return null;
+        const row = hwObj.d[hi];
+        if (!row || row[ri] == null) return null;
+        v = row[ri];
+    }
+    return Math.round(v);
+}
