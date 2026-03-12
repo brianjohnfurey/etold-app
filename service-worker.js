@@ -1,4 +1,4 @@
-const CACHE='etold-v12';
+const CACHE='etold-v13';
 const CORE=['./','./index.html','./app-loader.js','./manifest.json','./offline.html','./code/loader-manifest.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
