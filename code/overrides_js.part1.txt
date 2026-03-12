@@ -1,0 +1,119 @@
+
+(function(){
+  function esc(s){return (s ?? '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function getLegTheme(L){ return ['','etold-leg-1','etold-leg-2','etold-leg-3','etold-leg-4'][L] || 'etold-leg-1'; }
+  function getLegData(L){
+    const page = document.getElementById('page-leg'+L);
+    if(!page) return null;
+    const inputSections = [];
+    page.querySelectorAll('.inputs-scroll .input-section').forEach(sec => {
+      const title = sec.querySelector('.section-name')?.textContent?.trim() || 'Inputs';
+      const rows = [];
+      sec.querySelectorAll('.input-row').forEach(r => {
+        const lab = r.querySelector('.row-label')?.childNodes?.[0]?.textContent?.trim() || r.querySelector('.row-label')?.textContent?.trim();
+        const valEl = r.querySelector('input, select');
+        const val = valEl ? (valEl.value ?? '').toString() : '';
+        if (lab) rows.push([lab, val]);
+      });
+      if (rows.length) inputSections.push({title, rows});
+    });
+    const resultSections = [];
+    page.querySelectorAll('.results-scroll .result-section').forEach(sec => {
+      const title = sec.querySelector('.result-section-title')?.textContent?.trim() || 'Results';
+      const rows = [];
+      sec.querySelectorAll('.result-row').forEach(r => {
+        const lab = r.querySelector('.result-label')?.textContent?.trim();
+        const val = r.querySelector('.result-value')?.textContent?.trim();
+        if (lab && val) rows.push([lab, val]);
+      });
+      if (rows.length) resultSections.push({title, rows});
+    });
+    return {L,inputSections,resultSections};
+  }
+  function renderLegHTML(leg){
+    const inputsHtml = leg.inputSections.map(sec =>
+      `<div class="etold-print-box inputs"><div class="hdr">${esc(sec.title)}</div><table class="etold-print-table">${
+        sec.rows.map(([a,b])=>`<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join('')
+      }</table></div>`
+    ).join('');
+    const resultsHtml = leg.resultSections.map(sec =>
+      `<div class="etold-print-box results"><div class="hdr">${esc(sec.title)}</div><table class="etold-print-table">${
+        sec.rows.map(([a,b])=>`<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join('')
+      }</table></div>`
+    ).join('');
+    return `<section class="etold-print-leg ${getLegTheme(leg.L)}">
+      <div class="etold-leg-header">LEG ${leg.L}</div>
+      <div class="etold-print-grid">
+        <div class="etold-print-col">${inputsHtml}</div>
+        <div class="etold-print-col">${resultsHtml}</div>
+      </div>
+    </section>`;
+  }
+  function ensureOverlay(){
+    let overlay = document.getElementById('etoldSnapshotOverlay');
+    if (overlay) return overlay;
+    overlay = document.createElement('div');
+    overlay.id = 'etoldSnapshotOverlay';
+    overlay.className = 'etold-snapshot-overlay';
+    overlay.style.display = 'none';
+    overlay.innerHTML = `
+      <div class="etold-snapshot-card">
+        <div class="etold-snapshot-toolbar">
+          <div class="etold-snapshot-title">E-TOLD SNAPSHOT</div>
+          <div class="etold-snapshot-actions">
+            <button class="etold-snapshot-btn" id="etoldSnapshotPrintBtn">Print / Save PDF</button>
+            <button class="etold-snapshot-btn secondary" id="etoldSnapshotCloseBtn">Close</button>
+          </div>
+        </div>
+        <div class="etold-snapshot-body"><div class="etold-snapshot-legs" id="etoldSnapshotLegs"></div></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.style.display='none'; });
+    overlay.querySelector('#etoldSnapshotCloseBtn').addEventListener('click', ()=> overlay.style.display='none');
+    overlay.querySelector('#etoldSnapshotPrintBtn').addEventListener('click', ()=> {
+      const legs = [1,2,3,4].map(getLegData).filter(Boolean);
+      const content = legs.map(renderLegHTML).join('');
+      const printCss = `
+        <style>
+          @page { size: auto; margin: 0.25in; }
+          body{font-family:Arial,Helvetica,sans-serif; margin:0; color:#111;}
+          .etold-print-leg{page-break-after:always; break-after:page; border:1px solid #333; border-radius:0; overflow:hidden; margin:0;}
+          .etold-print-leg:last-child{page-break-after:auto; break-after:auto;}
+          .etold-leg-header{padding:8px 10px; font-weight:700; color:#fff; font-size:16px; letter-spacing:1px;}
+          .etold-leg-1 .etold-leg-header{background:#2A1808;}
+          .etold-leg-2 .etold-leg-header{background:#0B2545;}
+          .etold-leg-3 .etold-leg-header{background:#3A0F1B;}
+          .etold-leg-4 .etold-leg-header{background:#0B2E2A;}
+          .etold-print-grid{display:grid; grid-template-columns:1.35fr 1fr; gap:8px; padding:8px;}
+          .etold-print-box{border:1px solid #999; margin-bottom:6px; border-radius:6px; overflow:hidden;}
+          .etold-print-box .hdr{padding:4px 6px; font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#fff;}
+          .etold-print-box.inputs .hdr{background:#5a4630;}
+          .etold-leg-2 .etold-print-box.inputs .hdr{background:#1c406d;}
+          .etold-leg-3 .etold-print-box.inputs .hdr{background:#6a2331;}
+          .etold-leg-4 .etold-print-box.inputs .hdr{background:#1a5a4f;}
+          .etold-print-box.results .hdr{background:#2f6037;}
+          .etold-print-table{width:100%; border-collapse:collapse; font-size:9px; table-layout:fixed;}
+          .etold-print-table td{border-top:1px solid #d7d7d7; padding:2px 4px; vertical-align:top; line-height:1.15;}
+          .etold-print-table td:first-child{width:61%; color:#333;}
+          .etold-print-table td:last-child{text-align:right; font-family:Menlo,Consolas,monospace; word-break:break-word;}
+        </style>`;
+      const iframe = document.createElement('iframe');
+      iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+      document.body.appendChild(iframe);
+      const doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>E-TOLD Snapshot</title>${printCss}</head><body>${content}</body></html>`);
+      doc.close();
+      setTimeout(()=>{ iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(()=>iframe.remove(), 3000); }, 350);
+    });
+    return overlay;
+  }
+
+  window.snapshotReport = function(){
+    const overlay = ensureOverlay();
+    const container = overlay.querySelector('#etoldSnapshotLegs');
+    const legs = [1,2,3,4].map(getLegData).filter(Boolean);
+    container.innerHTML = legs.map(renderLegHTML).join('');
+    overlay.style.display = 'flex';
+  };
+})();
