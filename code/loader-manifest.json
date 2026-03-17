@@ -1,1 +1,50 @@
-[{"type": "concat-eval", "files": ["code/script0.part1.txt", "code/script0.part2.txt", "code/script0.part3.txt", "code/script0.part4.txt", "code/script0.part5.txt", "code/script0.part6.txt", "code/script0.part7.txt", "code/script0.part8.txt"], "sourceURL": "script0.js"}, {"type": "concat-eval", "files": ["code/script1.part1.txt", "code/script1.part2.txt"], "sourceURL": "script1.js"}, {"type": "concat-eval", "files": ["code/script2.part1.txt"], "sourceURL": "script2.js"}, {"type": "concat-eval", "files": ["code/script3.part1.txt"], "sourceURL": "script3.js"}, {"type": "concat-eval", "files": ["code/script4.part1.txt"], "sourceURL": "script4.js"}]
+[
+  {
+    "files": [
+      "code/script0.part1.txt",
+      "code/script0.part2.txt",
+      "code/script0.part3.txt",
+      "code/script0.part4.txt",
+      "code/script0.part5.txt",
+      "code/script0.part6.txt"
+    ],
+    "sourceURL": "script0.js"
+  },
+  {
+    "files": [
+      "code/script1.part1.txt",
+      "code/script1.part2.txt"
+    ],
+    "sourceURL": "script1.js"
+  },
+  {
+    "files": [
+      "code/script2.part1.txt"
+    ],
+    "sourceURL": "script2.js"
+  },
+  {
+    "files": [
+      "code/script3.part1.txt"
+    ],
+    "sourceURL": "script3.js"
+  },
+  {
+    "files": [
+      "code/script4.part1.txt"
+    ],
+    "sourceURL": "script4.js"
+  },
+  {
+    "files": [
+      "code/script5.part1.txt"
+    ],
+    "sourceURL": "script5.js"
+  },
+  {
+    "files": [
+      "code/script6.part1.txt"
+    ],
+    "sourceURL": "script6.js"
+  }
+]
