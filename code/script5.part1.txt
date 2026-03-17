@@ -1,0 +1,22 @@
+
+(function(){
+  function applyCheckFlapStyling(){
+    try{
+      var els = document.querySelectorAll('.result-value');
+      for(var i=0;i<els.length;i++){
+        var el = els[i];
+        var txt = (el.textContent || '').trim();
+        if(txt.indexOf('Check Flap Setting') !== -1){
+          el.classList.remove('ok','warn','pending');
+          el.classList.add('fail','check-flap');
+        } else {
+          el.classList.remove('check-flap');
+        }
+      }
+    }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    applyCheckFlapStyling();
+    window.setInterval(applyCheckFlapStyling, 250);
+  });
+})();

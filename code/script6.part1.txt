@@ -1,0 +1,166 @@
+
+(function(){
+  function esc(s){
+    return (s == null ? '' : String(s))
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function gatherLegData(L){
+    const page = document.getElementById('page-leg'+L);
+    if(!page) return null;
+    const inputSections = [];
+    page.querySelectorAll('.inputs-scroll .input-section').forEach(sec => {
+      const title = sec.querySelector('.section-name')?.textContent?.trim() || 'Inputs';
+      const rows = [];
+      sec.querySelectorAll('.input-row').forEach(row => {
+        const label = row.querySelector('.row-label')?.textContent?.replace(/\s+/g,' ').trim() || '';
+        const el = row.querySelector('input,select');
+        const value = el ? (el.value ?? '') : '';
+        if(label) rows.push([label, value]);
+      });
+      if(rows.length) inputSections.push({title, rows});
+    });
+
+    const resultSections = [];
+    page.querySelectorAll('.results-scroll .result-section').forEach(sec => {
+      const title = sec.querySelector('.result-section-title')?.textContent?.trim() || 'Results';
+      const rows = [];
+      sec.querySelectorAll('.result-row').forEach(row => {
+        const label = row.querySelector('.result-label')?.textContent?.replace(/\s+/g,' ').trim() || '';
+        const value = row.querySelector('.result-value')?.textContent?.replace(/\s+/g,' ').trim() || '';
+        if(label) rows.push([label, value]);
+      });
+      if(rows.length) resultSections.push({title, rows});
+    });
+    return {L, inputSections, resultSections};
+  }
+
+  function ensureOverlay(){
+    let overlay = document.getElementById('snapshotOverlay');
+    if(overlay) return overlay;
+    overlay = document.createElement('div');
+    overlay.id = 'snapshotOverlay';
+    overlay.innerHTML = `
+      <div class="snap-shell">
+        <div class="snap-toolbar">
+          <div class="snap-title">E-TOLD SNAPSHOT</div>
+          <div class="snap-actions">
+            <button class="snap-btn" id="snapPrintBtn">Print / Save PDF</button>
+            <button class="snap-btn" id="snapCloseBtn">Close</button>
+          </div>
+        </div>
+        <div class="snap-scroll" id="snapScroll"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('active'); });
+    overlay.querySelector('#snapCloseBtn').addEventListener('click', () => overlay.classList.remove('active'));
+    overlay.querySelector('#snapPrintBtn').addEventListener('click', () => printSnapshotDoc());
+    return overlay;
+  }
+
+  function renderSnapshotHtml(data){
+    let out = '<div class="snapshot-grid">';
+    data.forEach(leg => {
+      out += `<div class="snap-leg" data-leg="${leg.L}">`;
+      out += `<div class="snap-leg-header">LEG ${leg.L}</div>`;
+      out += `<div class="snap-leg-body">`;
+      out += `<div class="snap-column">`;
+      leg.inputSections.forEach(sec => {
+        out += `<div class="snap-box"><div class="snap-box-title">${esc(sec.title)}</div><table class="snap-table">`;
+        sec.rows.forEach(([a,b]) => { out += `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`; });
+        out += `</table></div>`;
+      });
+      out += `</div><div class="snap-column">`;
+      leg.resultSections.forEach(sec => {
+        out += `<div class="snap-box"><div class="snap-box-title">${esc(sec.title)}</div><table class="snap-table">`;
+        sec.rows.forEach(([a,b]) => { out += `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`; });
+        out += `</table></div>`;
+      });
+      out += `</div></div></div>`;
+    });
+    out += '</div>';
+    return out;
+  }
+
+  function renderPrintHtml(data){
+    const style = `
+      <style>
+        @page { size: auto; margin: 10mm; }
+        body{font-family:Arial,Helvetica,sans-serif; background:#fff; color:#111; margin:0;}
+        .wrap{padding:0;}
+        .leg{page-break-after:always; break-after:page; border:1px solid #ddd; border-radius:12px; overflow:hidden; margin:0 0 8px 0;}
+        .leg:last-child{page-break-after:auto; break-after:auto;}
+        .hdr{padding:8px 12px; font-weight:700; color:#fff; font-size:18px; letter-spacing:1px;}
+        .leg[data-leg="1"] .hdr{background:#5c3d1e;}
+        .leg[data-leg="2"] .hdr{background:#1e4e8c;}
+        .leg[data-leg="3"] .hdr{background:#9a4b24;}
+        .leg[data-leg="4"] .hdr{background:#2d6e36;}
+        .body{display:grid; grid-template-columns:1.08fr .92fr; gap:10px; padding:10px;}
+        .box{border:1px solid #d7d7d7; border-radius:8px; overflow:hidden; margin:0 0 8px 0;}
+        .ttl{padding:5px 8px; font-size:12px; font-weight:700; color:#fff;}
+        .leg[data-leg="1"] .ttl{background:#6a4a1d;}
+        .leg[data-leg="2"] .ttl{background:#225d96;}
+        .leg[data-leg="3"] .ttl{background:#b76034;}
+        .leg[data-leg="4"] .ttl{background:#3d8650;}
+        table{width:100%; border-collapse:collapse; font-size:10px;}
+        td{padding:3px 6px; border-bottom:1px solid #eee; vertical-align:top;}
+        td:first-child{width:58%; color:#444;}
+        td:last-child{text-align:right; font-family:Courier,monospace;}
+      </style>`;
+    let body = '<div class="wrap">';
+    data.forEach(leg => {
+      body += `<div class="leg" data-leg="${leg.L}"><div class="hdr">LEG ${leg.L}</div><div class="body"><div>`;
+      leg.inputSections.forEach(sec => {
+        body += `<div class="box"><div class="ttl">${esc(sec.title)}</div><table>`;
+        sec.rows.forEach(([a,b]) => { body += `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`; });
+        body += `</table></div>`;
+      });
+      body += `</div><div>`;
+      leg.resultSections.forEach(sec => {
+        body += `<div class="box"><div class="ttl">${esc(sec.title)}</div><table>`;
+        sec.rows.forEach(([a,b]) => { body += `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`; });
+        body += `</table></div>`;
+      });
+      body += `</div></div></div>`;
+    });
+    body += '</div>';
+    return `<!doctype html><html><head><meta charset="utf-8"><title>E-TOLD Snapshot</title>${style}</head><body>${body}</body></html>`;
+  }
+
+  function printSnapshotDoc(){
+    const data = [1,2,3,4].map(gatherLegData).filter(Boolean);
+    const html = renderPrintHtml(data);
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    iframe.onload = function(){
+      setTimeout(function(){
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(function(){ iframe.remove(); }, 1200);
+      }, 250);
+    };
+    // Safari fallback
+    setTimeout(function(){
+      try{
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      }catch(e){}
+    }, 600);
+  }
+
+  window.snapshotReport = function(){
+    const data = [1,2,3,4].map(gatherLegData).filter(Boolean);
+    const overlay = ensureOverlay();
+    overlay.querySelector('#snapScroll').innerHTML = renderSnapshotHtml(data);
+    overlay.classList.add('active');
+  };
+})();
