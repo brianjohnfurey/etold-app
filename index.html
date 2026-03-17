@@ -8,37 +8,15 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <style>
-html,body{
-  margin:0; height:100%; background:#0A0A0A; color:#F5F0E8;
-  font-family:Arial,Helvetica,sans-serif;
-}
-.wrap{
-  min-height:100%; display:flex; align-items:center; justify-content:center;
-  background:
-    radial-gradient(circle at 50% 10%, rgba(218,165,32,.15), transparent 35%),
-    radial-gradient(circle at 50% 100%, rgba(62,39,18,.45), transparent 40%),
-    #0A0A0A;
-}
-.card{
-  width:min(560px, calc(100vw - 32px)); padding:28px 22px; text-align:center;
-  border:1px solid rgba(218,165,32,.35); border-radius:18px; background:rgba(18,18,18,.92);
-  box-shadow:0 10px 40px rgba(0,0,0,.5);
-}
-.card img{width:120px; height:120px; object-fit:contain; filter:drop-shadow(0 0 18px rgba(218,165,32,.35));}
-h1{margin:14px 0 6px; color:#F0C040; letter-spacing:2px;}
-p{opacity:.9; line-height:1.45; margin:8px 0;}
-.small{font-size:13px; opacity:.75;}
+html,body{margin:0;height:100%;background:#0A0A0A;color:#F5F0E8;font-family:Arial,Helvetica,sans-serif;}
+.wrap{min-height:100%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 10%, rgba(218,165,32,.15), transparent 35%),radial-gradient(circle at 50% 100%, rgba(62,39,18,.45), transparent 40%),#0A0A0A;}
+.card{width:min(560px, calc(100vw - 32px));padding:28px 22px;text-align:center;border:1px solid rgba(218,165,32,.35);border-radius:18px;background:rgba(18,18,18,.92);box-shadow:0 10px 40px rgba(0,0,0,.5);}
+.card img{width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(218,165,32,.35));}
+h1{margin:14px 0 6px;color:#F0C040;letter-spacing:2px;}p{opacity:.9;line-height:1.45;margin:8px 0;}.small{font-size:13px;opacity:.75;}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <img src="assets/lion.png" alt="Lion">
-    <h1>Loading E-TOLD</h1>
-    <p>Please wait while the app assembles from its GitHub-safe bundle.</p>
-    <p class="small" id="statusText">Preparing application…</p>
-  </div>
-</div>
+<div class="wrap"><div class="card"><img src="assets/lion.png" alt="Lion"><h1>Loading E-TOLD</h1><p>Please wait while the app assembles from its GitHub-safe bundle.</p><p class="small" id="statusText">Preparing application…</p></div></div>
 <script src="app-loader.js"></script>
 </body>
 </html>
